@@ -1,6 +1,8 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
 #include "../include/LambertSolver.hpp"
+#include "../include/KeplerPropagator.hpp"
+#include "../include/PatchedConic.hpp"
 
 namespace py = pybind11;
 
@@ -20,4 +22,25 @@ PYBIND11_MODULE(cppEngine, m) {
         .def("solve", &LambertSolver::solve,
              "Solves Lambert's problem",
              py::arg("r1"), py::arg("r2"), py::arg("tof"), py::arg("long_way") = false);
+
+    py::class_<KeplerPropagator>(m, "KeplerPropagator")
+        .def(py::init<double, double, int>(),
+             py::arg("mu"), py::arg("tolerance") = 1e-8, py::arg("max_iter") = 100)
+        .def("propagate", &KeplerPropagator::propagate,
+             "Propagates an initial state vector forward in time",
+             py::arg("r0"), py::arg("v0"), py::arg("dt"));
+
+    py::class_<PatchedConic>(m, "PatchedConic")
+        .def(py::init<double, double, double, double>(),
+             py::arg("mu_earth"), py::arg("mu_mars"), py::arg("r_park_earth"), py::arg("r_park_mars"))
+        .def("get_departure_delta_v", &PatchedConic::get_departure_delta_v,
+             "Calculates Earth departure Delta V",
+             py::arg("v_lambert_dep"), py::arg("v_earth"))
+        .def("get_arrival_delta_v", &PatchedConic::get_arrival_delta_v,
+             "Calculates Mars arrival Delta V",
+             py::arg("v_lambert_arr"), py::arg("v_mars"))
+        .def("get_total_delta_v", &PatchedConic::get_total_delta_v,
+             "Calculates total mission Delta V",
+             py::arg("v_lambert_dep"), py::arg("v_earth"),
+             py::arg("v_lambert_arr"), py::arg("v_mars"));
 }

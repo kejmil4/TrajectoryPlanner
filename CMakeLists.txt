@@ -31,6 +31,8 @@ find_package(pybind11 CONFIG REQUIRED)
 pybind11_add_module(cppEngine
         cppEngine/src/bindings.cpp
         cppEngine/src/LambertSolver.cpp
+        cppEngine/src/KeplerPropagator.cpp
+        cppEngine/src/PatchedConic.cpp
 )
 
 target_include_directories(cppEngine PRIVATE ${eigen_SOURCE_DIR})
