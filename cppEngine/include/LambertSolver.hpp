@@ -9,7 +9,7 @@ private:
     double tolerance;
     int max_iter;
 
-    double x2tof(double x, double s, double c, int lw);
+    double x2tof(double x, double s, double c, int lw) const;
 public:
 
     LambertSolver(int max_iter, double mu, double tolerance);
@@ -19,6 +19,6 @@ public:
     double GetTolerance() const;
     int GetMaxIter() const;
 
-    std::tuple<Eigen::Vector3d, Eigen::Vector3d> solve(const Eigen::Vector3d& r1, const Eigen::Vector3d& r2, double tof, bool long_way = false);
+    std::tuple<Eigen::Vector3d, Eigen::Vector3d> solve(const Eigen::Vector3d& r1, const Eigen::Vector3d& r2, double tof, bool long_way = false) const;
 
 };

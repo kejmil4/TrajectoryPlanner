@@ -16,7 +16,7 @@ double LambertSolver::GetMu() const {
     return mu;
 }
 
-double LambertSolver::x2tof(double x, double s, double c, int lw) {
+double LambertSolver::x2tof(double x, double s, double c, int lw) const{
     double a = s / (2.0 * (1.0 - x * x));
     double alpha, beta, t;
 
@@ -43,7 +43,7 @@ double LambertSolver::x2tof(double x, double s, double c, int lw) {
     }
 }
 
-std::tuple<Eigen::Vector3d, Eigen::Vector3d> LambertSolver::solve(const Eigen::Vector3d& r1, const Eigen::Vector3d& r2, double tof, bool long_way) {
+std::tuple<Eigen::Vector3d, Eigen::Vector3d> LambertSolver::solve(const Eigen::Vector3d& r1, const Eigen::Vector3d& r2, double tof, bool long_way) const {
     // Non-Dimensionalization
     double R = r1.norm();
     double V = std::sqrt(mu / R);

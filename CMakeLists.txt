@@ -33,6 +33,7 @@ pybind11_add_module(cppEngine
         cppEngine/src/LambertSolver.cpp
         cppEngine/src/KeplerPropagator.cpp
         cppEngine/src/PatchedConic.cpp
+        cppEngine/src/TrajectoryOptimizer.cpp
 )
 
 target_include_directories(cppEngine PRIVATE ${eigen_SOURCE_DIR})
