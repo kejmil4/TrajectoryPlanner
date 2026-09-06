@@ -3,6 +3,7 @@
 #include "../include/LambertSolver.hpp"
 #include "../include/KeplerPropagator.hpp"
 #include "../include/PatchedConic.hpp"
+#include "../include/TrajectoryOptimizer.hpp"
 
 namespace py = pybind11;
 
@@ -43,4 +44,11 @@ PYBIND11_MODULE(cppEngine, m) {
              "Calculates total mission Delta V",
              py::arg("v_lambert_dep"), py::arg("v_earth"),
              py::arg("v_lambert_arr"), py::arg("v_mars"));
+
+     py::class_<TrajectoryOptimizer>(m, "TrajectoryOptimizer")
+        .def(py::init<const LambertSolver&, const PatchedConic&>(),
+             py::arg("solver"), py::arg("patched_conic"))
+        .def("optimize_grid", &TrajectoryOptimizer::optimize_grid,
+             "Executes the grid search for delta-V costs over a matrix of departure and arrival states",
+             py::arg("dep_states"), py::arg("arr_states"), py::arg("tofs"), py::arg("long_way") = true);
 }
