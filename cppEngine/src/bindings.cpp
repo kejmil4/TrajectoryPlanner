@@ -14,8 +14,6 @@ int test_connection(int a, int b) {
 
 PYBIND11_MODULE(cppEngine, m) {
     m.doc() = "C++ Math Engine for Trajectory Planning";
-    
-    // m.def("test_connection", &test_connection, "Adds two numbers to test the Python-C++ bridge");
 
     py::class_<LambertSolver>(m, "LambertSolver")
         .def(py::init<int, double, double>(),
@@ -31,24 +29,24 @@ PYBIND11_MODULE(cppEngine, m) {
              "Propagates an initial state vector forward in time",
              py::arg("r0"), py::arg("v0"), py::arg("dt"));
 
-    py::class_<PatchedConic>(m, "PatchedConic")
-        .def(py::init<double, double, double, double>(),
-             py::arg("mu_earth"), py::arg("mu_mars"), py::arg("r_park_earth"), py::arg("r_park_mars"))
-        .def("get_departure_delta_v", &PatchedConic::get_departure_delta_v,
-             "Calculates Earth departure Delta V",
-             py::arg("v_lambert_dep"), py::arg("v_earth"))
-        .def("get_arrival_delta_v", &PatchedConic::get_arrival_delta_v,
-             "Calculates Mars arrival Delta V",
-             py::arg("v_lambert_arr"), py::arg("v_mars"))
-        .def("get_total_delta_v", &PatchedConic::get_total_delta_v,
-             "Calculates total mission Delta V",
-             py::arg("v_lambert_dep"), py::arg("v_earth"),
-             py::arg("v_lambert_arr"), py::arg("v_mars"));
+     py::class_<PatchedConic>(m, "PatchedConic")
+         .def(py::init<>())
+         .def("get_departure_delta_v", &PatchedConic::get_departure_delta_v,
+              "Calculates departure Delta V",
+              py::arg("v_lambert_dep"), py::arg("v_planet_dep"), py::arg("mu_dep"), py::arg("r_park_dep"))
+         .def("get_arrival_delta_v", &PatchedConic::get_arrival_delta_v,
+              "Calculates arrival Delta V",
+              py::arg("v_lambert_arr"), py::arg("v_planet_arr"), py::arg("mu_arr"), py::arg("r_park_arr"))
+         .def("get_total_delta_v", &PatchedConic::get_total_delta_v,
+              "Calculates total mission Delta V",
+              py::arg("v_lambert_dep"), py::arg("v_planet_dep"), py::arg("mu_dep"), py::arg("r_park_dep"),
+              py::arg("v_lambert_arr"), py::arg("v_planet_arr"), py::arg("mu_arr"), py::arg("r_park_arr"));
 
      py::class_<TrajectoryOptimizer>(m, "TrajectoryOptimizer")
         .def(py::init<const LambertSolver&, const PatchedConic&>(),
              py::arg("solver"), py::arg("patched_conic"))
         .def("optimize_grid", &TrajectoryOptimizer::optimize_grid,
              "Executes the grid search for delta-V costs over a matrix of departure and arrival states",
-             py::arg("dep_states"), py::arg("arr_states"), py::arg("tofs"), py::arg("long_way") = true);
+             py::arg("dep_states"), py::arg("arr_states"), py::arg("tofs"),
+             py::arg("mu_dep"), py::arg("r_park_dep"), py::arg("mu_arr"), py::arg("r_park_arr"), py::arg("long_way") = true);
 }
