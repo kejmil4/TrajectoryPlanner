@@ -22,7 +22,7 @@ A professional-grade astrodynamics trajectory planner that bridges a high-perfor
 
 * **Backend:** C++17, Eigen3 (Linear Algebra)
 * **Language Bridge:** Pybind11
-* **Frontend:** Python 3.x, Streamlit
+* **Frontend:** Python 3.14.4, Streamlit
 * **Data & Visualization:** NumPy, Pandas, Plotly, SpiceyPy
 
 ## Project Structure
