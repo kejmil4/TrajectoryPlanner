@@ -15,8 +15,9 @@ public:
     double get_arrival_delta_v(const Eigen::Vector3d& v_lambert_arr,
                                const Eigen::Vector3d& v_planet_arr,
                                double mu_arr,
-                               double r_park_arr) const;
+                               double r_park_arr,
+                               double e_arr) const;
 
     double get_total_delta_v(const Eigen::Vector3d& v_lambert_dep, const Eigen::Vector3d& v_planet_dep, double mu_dep, double r_park_dep,
-                             const Eigen::Vector3d& v_lambert_arr, const Eigen::Vector3d& v_planet_arr, double mu_arr, double r_park_arr) const;
+                             const Eigen::Vector3d& v_lambert_arr, const Eigen::Vector3d& v_planet_arr, double mu_arr, double r_park_arr, double e_arr) const;
 };

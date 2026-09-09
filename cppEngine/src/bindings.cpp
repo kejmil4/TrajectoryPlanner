@@ -36,11 +36,11 @@ PYBIND11_MODULE(cppEngine, m) {
               py::arg("v_lambert_dep"), py::arg("v_planet_dep"), py::arg("mu_dep"), py::arg("r_park_dep"))
          .def("get_arrival_delta_v", &PatchedConic::get_arrival_delta_v,
               "Calculates arrival Delta V",
-              py::arg("v_lambert_arr"), py::arg("v_planet_arr"), py::arg("mu_arr"), py::arg("r_park_arr"))
+              py::arg("v_lambert_arr"), py::arg("v_planet_arr"), py::arg("mu_arr"), py::arg("r_park_arr"), py::arg("e_arr"))
          .def("get_total_delta_v", &PatchedConic::get_total_delta_v,
               "Calculates total mission Delta V",
               py::arg("v_lambert_dep"), py::arg("v_planet_dep"), py::arg("mu_dep"), py::arg("r_park_dep"),
-              py::arg("v_lambert_arr"), py::arg("v_planet_arr"), py::arg("mu_arr"), py::arg("r_park_arr"));
+              py::arg("v_lambert_arr"), py::arg("v_planet_arr"), py::arg("mu_arr"), py::arg("r_park_arr"), py::arg("e_arr"));
 
      py::class_<TrajectoryOptimizer>(m, "TrajectoryOptimizer")
         .def(py::init<const LambertSolver&, const PatchedConic&>(),
@@ -48,5 +48,5 @@ PYBIND11_MODULE(cppEngine, m) {
         .def("optimize_grid", &TrajectoryOptimizer::optimize_grid,
              "Executes the grid search for delta-V costs over a matrix of departure and arrival states",
              py::arg("dep_states"), py::arg("arr_states"), py::arg("tofs"),
-             py::arg("mu_dep"), py::arg("r_park_dep"), py::arg("mu_arr"), py::arg("r_park_arr"), py::arg("long_way") = true);
+             py::arg("mu_dep"), py::arg("r_park_dep"), py::arg("mu_arr"), py::arg("r_park_arr"), py::arg("e_arr"), py::arg("long_way") = true);
 }

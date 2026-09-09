@@ -3,6 +3,7 @@ import numpy as np
 from datetime import datetime, timedelta
 import plotly.graph_objects as go
 import spiceypy as spice
+import pandas as pd
 
 from ephemeris import EphemerisManager
 import cppEngine
@@ -45,10 +46,40 @@ st.sidebar.header("Trajectory Settings")
 transfer_type = st.sidebar.radio("Transfer Geometry", ["Type I (Short Way, < 180°)", "Type II (Long Way, > 180°)"])
 is_long_way = True if "Type II" in transfer_type else False
 
+arrival_profile = st.sidebar.selectbox(
+    "Arrival Orbit Type",
+    ["Low Circular Orbit (LCO)", "Highly Elliptical Orbit (HEO)", "Aerocapture / Direct Entry"]
+)
+
+if "Circular" in arrival_profile:
+    e_arr = 0.0
+elif "Elliptical" in arrival_profile:
+    e_arr = 0.95
+else:
+    e_arr = -1.0
+
 st.sidebar.markdown("---")
-st.sidebar.header("Parking Orbits")
-park_alt_dep = st.sidebar.number_input(f"{dep_planet.capitalize()} Parking Altitude (km)", value=PLANET_DATA[dep_planet]['default_park_alt'])
-park_alt_arr = st.sidebar.number_input(f"{arr_planet.capitalize()} Parking Altitude (km)", value=PLANET_DATA[arr_planet]['default_park_alt'])
+st.sidebar.header("Orbit Parameters")
+
+park_alt_dep = st.sidebar.number_input(
+    f"{dep_planet.capitalize()} Departure Altitude (km)",
+    value=PLANET_DATA[dep_planet]['default_park_alt']
+)
+
+if "Circular" in arrival_profile:
+    park_alt_arr = st.sidebar.number_input(
+        f"{arr_planet.capitalize()} Parking Altitude (km)",
+        value=PLANET_DATA[arr_planet]['default_park_alt']
+    )
+elif "Elliptical" in arrival_profile:
+    park_alt_arr = st.sidebar.number_input(
+        f"{arr_planet.capitalize()} Periapsis Altitude (km)",
+        value=PLANET_DATA[arr_planet]['default_park_alt']
+    )
+else:
+
+    st.sidebar.info("Aerocapture: Atmospheric braking assumes zero arrival propellant.")
+    park_alt_arr = 0.0
 
 # Extract Dynamic Constants
 SUN_MU = PLANET_DATA['SUN']['mu']
@@ -92,16 +123,26 @@ if st.sidebar.button("Generate Porkchop Plot"):
         patched_conic = cppEngine.PatchedConic()
         optimizer = cppEngine.TrajectoryOptimizer(solver, patched_conic)
 
-        dep_dv, arr_dv, tot_dv = optimizer.optimize_grid(
+        dep_dv, arr_dv, tot_dv, c3, v_inf_arr = optimizer.optimize_grid(
             dep_states, arr_states, tofs,
-            mu_dep, r_park_dep, mu_arr, r_park_arr, is_long_way
+            mu_dep, r_park_dep, mu_arr, r_park_arr, e_arr, is_long_way
         )
+
+        custom_data = np.stack((c3, v_inf_arr), axis=-1)
 
         fig = go.Figure(data=go.Contour(
             z=tot_dv, x=arr_dates, y=dep_dates, colorscale='Jet',
             contours=dict(start=8, end=max_dv, size=0.5, showlines=True),
             colorbar=dict(title='Total Delta-V (km/s)'),
-            hovertemplate="Departure: %{y}<br>Arrival: %{x}<br>Delta-V: %{z:.2f} km/s<extra></extra>"
+            customdata=custom_data,
+            hovertemplate=(
+                "Departure: %{y}<br>"
+                "Arrival: %{x}<br>"
+                "Total ΔV: %{z:.2f} km/s<br>"
+                "Launch C3: %{customdata[0]:.2f} km²/s²<br>"
+                "Arrival v_inf: %{customdata[1]:.2f} km/s"
+                "<extra></extra>"
+            )
         ))
 
         X, Y = np.meshgrid(arr_dates, dep_dates)
@@ -255,3 +296,32 @@ if 'sim_data' in st.session_state:
     )
 
     st.plotly_chart(fig3d, use_container_width=True)
+
+    st.markdown("### Export Mission Data")
+
+    steps = len(data['transfer_path']) - 1
+    waypoints = []
+
+    for i in range(steps + 1):
+        step_day = (tof_days / steps) * i
+        step_date = data['dep_date'] + timedelta(days=step_day)
+
+        waypoints.append({
+            "Date": step_date.strftime('%Y-%m-%d %H:%M:%S'),
+            "Flight_Day": round(step_day, 2),
+            "X_km": round(data['transfer_path'][i, 0], 3),
+            "Y_km": round(data['transfer_path'][i, 1], 3),
+            "Z_km": round(data['transfer_path'][i, 2], 3)
+        })
+
+    df_export = pd.DataFrame(waypoints)
+    csv_data = df_export.to_csv(index=False).encode('utf-8')
+
+    file_name = f"Trajectory_{data['name_dep']}_to_{data['name_arr']}_{data['dep_date'].strftime('%Y%m%d')}.csv"
+
+    st.download_button(
+        label="Download 3D Trajectory Waypoints (CSV)",
+        data=csv_data,
+        file_name=file_name,
+        mime="text/csv"
+    )

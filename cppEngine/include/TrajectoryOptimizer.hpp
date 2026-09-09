@@ -15,7 +15,7 @@ public:
     ~TrajectoryOptimizer() = default;
 
     // Executes the grid search using dynamic planetary parameters
-    std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> optimize_grid(
+    std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> optimize_grid(
         const Eigen::MatrixXd& dep_states,
         const Eigen::MatrixXd& arr_states,
         const Eigen::MatrixXd& tofs,
@@ -23,6 +23,7 @@ public:
         double r_park_dep,
         double mu_arr,
         double r_park_arr,
+        double e_arr,
         bool long_way = true
     ) const;
 };
